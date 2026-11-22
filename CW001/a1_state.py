@@ -16,8 +16,6 @@ Includes a State class for Task 1
 @date:   21/10/2026
 
 """
-
-
 import copy
 from collections import deque
 
@@ -29,52 +27,71 @@ class State:
 
     def __init__(self, grid):
         """
-        1.1) Initialises the State with a 5x5 2D list representing the board.
-        Each element represents the number of counters in that cell.
+        1.1) Initialises the State with a 2D list grid representing the
+        number of counters in each cell of the 5x5 board.
         """
-        # Deep copy ensures external modifications to the input list don't mutate internal state
+        # Deep copy prevents external list mutations from altering this state
         self.grid = copy.deepcopy(grid)
-        self.rows = len(self.grid)
-        self.cols = len(self.grid[0]) if self.rows > 0 else 0
 
     def __str__(self):
         """
         1.2) Returns a readable string representation of the board without borders,
-        matching the matrix style shown in Figure 1.1.
+        matching the matrix layout in Figure 1.1.
         """
         return "\n".join(" ".join(str(cell) for cell in row) for row in self.grid)
 
-    def _letter_to_coords(self, letter):
+    def move(self, letter):
         """
-        1.7) Utility method: Converts a move letter ('A'-'Y') into (row, col) coordinates.
-        Returns None if the letter is invalid or reserved ('Z').
+        1.3) Receives a letter ('A'-'Y') representing a move and removes one counter
+        from the corresponding cell, provided the move is legitimate.
+        Returns True if successful, False if the move is invalid or cell is empty.
         """
+        # Validate that input is a single uppercase/lowercase character between 'A' and 'Y'
         if not isinstance(letter, str) or len(letter) != 1:
-            return None
-        
+            return False
+
         letter = letter.upper()
-        if 'A' <= letter <= 'Y':
-            index = ord(letter) - ord('A')
-            return divmod(index, 5)  # Returns (row, col) for a 5x5 grid
-        return None
+        if not ('A' <= letter <= 'Y'):
+            return False
 
-    def _coords_to_letter(self, r, c):
-        """
-        1.7) Utility method: Converts (row, col) coordinates into a move letter ('A'-'Y').
-        """
-        return chr(ord('A') + (r * 5 + c))
+        # Convert letter 'A'-'Y' (0-24) into (row, col) coordinates on a 5x5 grid
+        index = ord(letter) - ord('A')
+        r, c = divmod(index, 5)
 
-    def _get_adjacent_coords(self, r, c):
-        """
-        1.7) Utility method: Yields all valid adjacent coordinates (horizontally,
-        vertically, or diagonally) where max{|r-r'|, |c-c'|} == 1.
-        """
-        for dr in (-1, 0, 1):
-            for dc in (-1, 0, 1):
-                if dr == 0 and dc == 0:
-                    continue
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < self.rows and 0 <= nc < self.cols:
-                    yield nr, nc
+        # Check if the cell is active (contains at least 1 counter)
+        if self.grid[r][c] <= 0:
+            return False
 
-    
+        # Perform the legitimate move by removing one counter
+        self.grid[r][c] -= 1
+        return True
+
+    def successors(self):
+        """
+        1.4) Generator method that yields all possible State objects reachable
+        in one move (removing one counter from any active cell).
+        """
+        rows = len(self.grid)
+        cols = len(self.grid) if rows > 0 else 0
+
+        for r in range(rows):
+            for c in range(cols):
+                if self.grid[r][c] > 0:
+                    # Create an independent copy of the current state for each valid move
+                    next_state = State(self.grid)
+                    next_state.grid[r][c] -= 1
+                    yield next_state
+
+    def numRegions(self):
+        pass
+
+    def numHingers(self):
+        pass
+
+
+def tester():
+    pass  # Placeholder for testing the State class functionality
+
+
+if __name__ == "__main__":
+    tester()
